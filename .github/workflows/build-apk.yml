@@ -1,0 +1,49 @@
+name: Build Android APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Mark LV APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 1. Get the code
+        uses: actions/checkout@v4
+
+      - name: 2. Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: 3. Install Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: 4. Build the APK
+        run: gradle assembleDebug --no-daemon
+
+      - name: 5. Rename the APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk MarkLV.apk
+
+      - name: 6. Save the APK as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MarkLV-APK
+          path: MarkLV.apk
+
+      - name: 7. Publish the APK to Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Mark LV — build ${{ github.run_number }}
+          body: |
+            Download **MarkLV.apk** on your phone, tap it, allow "install from unknown sources", install. Then open the app, press Settings and paste your free Gemini API key from aistudio.google.com/apikey.
+
+            فایل **MarkLV.apk** را روی گوشی دانلود کنید، لمسش کنید، اجازهٔ «نصب از منابع ناشناس» را بدهید و نصب کنید. بعد اپ را باز کنید، Settings را بزنید و کلید رایگان Gemini را از aistudio.google.com/apikey داخلش بگذارید.
+          files: MarkLV.apk
